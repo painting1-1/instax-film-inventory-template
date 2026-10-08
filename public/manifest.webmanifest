@@ -1,0 +1,17 @@
+{
+  "name": "片刻库存",
+  "short_name": "片刻库存",
+  "description": "拍立得相纸与相机的库存和流水管理",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf8f1",
+  "theme_color": "#faf8f1",
+  "icons": [
+    {
+      "src": "/assets/rainbow-front-icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

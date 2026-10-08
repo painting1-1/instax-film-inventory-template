@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#faf8f1" />
+    <meta name="description" content="私有拍立得库存、流水与相纸效期管理" />
+    <title>片刻库存</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="片刻库存" />
+    <link rel="icon" type="image/png" href="/assets/rainbow-front-icon.png" />
+    <link rel="apple-touch-icon" href="/assets/rainbow-front-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/styles.css?v=public-template-1" />
+  </head>
+  <body>
+    <dialog id="unlockDialog"><form id="unlockForm">
+      <div class="dialog-head"><h2>解锁片刻库存</h2><button type="button" class="icon-button" data-close-dialog aria-label="关闭">×</button></div>
+      <p class="form-hint">只需输入个人口令，无需邮箱或注册。此设备将保持解锁 90 天。</p>
+      <label><span>个人口令</span><input name="passphrase" type="password" autocomplete="current-password" required minlength="12" maxlength="200" /></label>
+      <p id="unlockError" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-close-dialog>取消</button><button type="submit" id="unlockSubmit" class="button primary">解锁</button></div>
+    </form></dialog>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#overview" aria-label="片刻库存首页">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span><strong>片刻库存</strong><small>INSTANT ARCHIVE</small></span>
+        </a>
+        <nav aria-label="主导航">
+          <a class="nav-link active" href="#overview" data-section="overview"><span>⌂</span>概览</a>
+          <a class="nav-link" href="#inventory" data-section="inventory"><span>▦</span>库存</a>
+          <a class="nav-link" href="#ledger" data-section="ledger"><span>↕</span>流水</a>
+          <a class="nav-link" href="#products" data-section="products"><span>▤</span>商品库</a>
+        </nav>
+        <div class="sidebar-foot">
+          <div class="sync-card">
+            <span class="sync-dot" id="syncDot"></span>
+            <div><strong id="syncTitle">正在连接</strong><small id="syncDetail">检查云端数据</small></div>
+          </div>
+          <button type="button" class="text-button hidden" id="resolveConflict">处理同步冲突</button>
+          <button type="button" class="text-button hidden" id="lockButton">锁定此设备</button>
+          <button class="text-button" id="dataButton">导入 / 导出数据</button>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="mobile-brand" aria-label="打开导航" id="menuButton"><span class="brand-mark small"><span></span></span></button>
+          <div>
+            <p class="eyebrow">MY INSTANT COLLECTION</p>
+            <h1 id="pageTitle"><span>今天的库存，</span><span>一眼看清</span></h1>
+          </div>
+          <div class="top-actions">
+            <button class="button ghost" id="addProductButton"><span>＋</span>商品</button>
+            <button class="button primary" id="addTransactionButton"><span>＋</span>记一笔购入</button>
+          </div>
+        </header>
+
+        <div class="preview-notice hidden" id="previewNotice">
+          <div><strong>当前是空白预览</strong><span>输入个人口令，载入你的云端库存。</span><button type="button" class="button ghost" id="unlockButton">解锁库存</button><span></span></div>
+        </div>
+
+        <section id="overview" class="page-section">
+          <div class="summary-grid">
+            <article class="summary-card hero-card">
+              <div class="card-label"><span class="icon-box">◫</span>当前库存成本</div>
+              <strong id="inventoryValue">¥0.00</strong>
+              <p>库存官方价总额 <span id="officialInventoryValue">¥0.00</span></p>
+              <div class="mini-film" aria-hidden="true"><i></i><b></b></div>
+            </article>
+            <article class="summary-card">
+              <div class="card-label"><span class="icon-box coral">↗</span>累计购入</div>
+              <strong id="purchaseTotal">¥0.00</strong>
+              <p id="purchaseCount">0 笔购入流水</p>
+            </article>
+            <article class="summary-card">
+              <div class="card-label"><span class="icon-box blue">↙</span>累计售出</div>
+              <strong id="saleTotal">¥0.00</strong>
+              <p id="saleCount">0 笔售出流水</p>
+            </article>
+            <article class="summary-card profit-card">
+              <div class="card-label"><span class="icon-box gold">✦</span>真实利润</div>
+              <strong id="trueProfit">¥0.00</strong>
+              <p>已排除朋友原价转让</p>
+            </article>
+          </div>
+
+          <div class="overview-grid">
+            <article class="panel sheet-panel">
+              <div class="panel-head">
+                <div><p class="eyebrow">FILM BALANCE</p><div class="film-title-row"><h2>剩余相纸</h2><span class="film-total-inline">全部系列 <strong id="totalFilmValue">0</strong><small id="totalFilmUnit">张</small></span></div></div>
+                <button class="chip" id="filmUnitToggle">切换为盒数</button>
+              </div>
+              <div class="sheet-counters">
+                <div class="sheet-count mint"><span>Mini</span><strong id="miniSheets">0</strong><small>张</small></div>
+                <div class="sheet-count lavender"><span>Square</span><strong id="sqSheets">0</strong><small>张</small></div>
+                <div class="sheet-count peach"><span>Wide</span><strong id="wideSheets">0</strong><small>张</small></div>
+              </div>
+            </article>
+
+            <article class="panel expiry-panel">
+              <div class="panel-head">
+                <div><p class="eyebrow">EXPIRY WATCH</p><h2>即将过期</h2></div>
+                <button class="chip" id="expirySetting">90 天内</button>
+              </div>
+              <div id="expiryList" class="expiry-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="inventory" class="page-section">
+          <div class="section-head">
+            <div><p class="eyebrow">INVENTORY</p><h2>库存概览</h2><p>同一型号的不同批次合并统计，查看剩余数量和平均购入价。</p></div>
+            <div class="inventory-head-actions"><button type="button" class="button ghost" id="inventoryShareButton">分享库存</button><div class="segmented" id="inventoryCategory">
+              <button class="active" data-value="全部">全部</button><button data-value="相纸">相纸</button><button data-value="相机">相机</button>
+            </div>
+          </div>
+          </div>
+          <div class="filters panel compact" id="inventoryFilterPanel">
+            <label class="inventory-search-field"><span>搜索</span><input id="inventorySearch" aria-label="搜索库存" placeholder="系列、型号或规格" /></label>
+            <button type="button" class="button ghost mobile-ledger-control" id="inventoryFilterToggle" aria-expanded="false" aria-controls="seriesFilter expiryFilter">筛选</button>
+            <label class="inventory-advanced-field"><span>系列</span><select id="seriesFilter"><option value="">全部系列</option></select></label>
+            <label class="inventory-advanced-field"><span>有效期</span><select id="expiryFilter"><option value="">全部有效期</option></select></label>
+            <button type="button" class="button ghost clear-filter" id="clearFilters">清除筛选</button>
+            <div class="mobile-filter-actions"><button type="button" class="button ghost" id="inventoryFilterReset">重置</button><button type="button" class="button primary" id="inventoryFilterDone">完成</button></div>
+          </div>
+          <div class="mobile-ledger-status"><span id="inventoryResultCount"></span><button type="button" class="text-button hidden" id="inventoryFilterClear">清除筛选</button></div>
+          <div class="inventory-table panel">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>商品型号</th><th class="num">剩余数量</th><th class="num">平均购入价</th><th></th></tr></thead>
+                <tbody id="inventoryBody"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="inventoryEmpty"><span class="empty-photo">＋</span><strong>还没有库存</strong><p>先添加商品，再记录一笔购入。</p><button class="button primary" id="emptyAddButton">记一笔购入</button></div>
+          </div>
+        </section>
+
+        <section id="ledger" class="page-section">
+          <div class="section-head">
+            <div><p class="eyebrow">LEDGER</p><h2>出入库流水</h2><p>每笔购入、售出与自用都有迹可循。</p></div>
+            <div class="segmented" id="transactionType">
+              <button class="active" data-value="全部">全部</button><button data-value="purchase">购入</button><button data-value="sale">售出</button><button data-value="use">使用</button>
+            </div>
+          </div>
+          <div class="filters panel compact ledger-filters" id="ledgerFilterPanel">
+            <label class="ledger-search-field"><span>搜索</span><input id="ledgerSearch" aria-label="搜索流水" placeholder="搜索型号、平台、店铺名称或交易对象" /></label>
+            <button type="button" class="button ghost mobile-ledger-control" id="ledgerFilterToggle" aria-expanded="false" aria-controls="ledgerCategory ledgerSeries ledgerExpiry">筛选</button>
+            <label class="ledger-advanced-field"><span>商品类别</span><select id="ledgerCategory"><option value="">全部商品</option><option value="相纸">相纸</option><option value="相机">相机</option></select></label>
+            <label class="ledger-advanced-field"><span>系列</span><select id="ledgerSeries"><option value="">全部系列</option></select></label>
+            <label class="ledger-advanced-field"><span>有效期</span><select id="ledgerExpiry"><option value="">全部有效期</option></select></label>
+            <div class="mobile-filter-actions"><button type="button" class="button ghost" id="ledgerFilterReset">重置</button><button type="button" class="button primary" id="ledgerFilterDone">完成</button></div>
+          </div>
+          <div class="mobile-ledger-status"><span id="ledgerResultCount"></span><button type="button" class="text-button hidden" id="ledgerFilterClear">清除筛选</button></div>
+          <div class="ledger-list panel" id="ledgerList"></div>
+        </section>
+        <section id="products" class="page-section">
+          <div class="section-head"><div><p class="eyebrow">PRODUCT LIBRARY</p><h2>商品库</h2><p>全部商品都在这里，未购入和零库存的商品也可以查看、编辑。</p></div><button type="button" class="button primary" id="libraryAddProduct">＋ 商品</button></div>
+          <div class="product-library-toolbar">
+            <label class="library-search"><span>搜索商品库</span><input id="librarySearch" placeholder="搜索系列、型号或颜色" /></label>
+            <div class="segmented" id="libraryCategory"><button type="button" class="active" data-value="全部">全部</button><button type="button" data-value="相机">相机</button><button type="button" data-value="相纸">相纸</button></div>
+          </div>
+          <div class="segmented hidden library-series" id="librarySeries"><button type="button" class="active" data-value="">全部系列</button><button type="button" data-value="Mini">Mini</button><button type="button" data-value="SQ">SQ</button><button type="button" data-value="Wide">Wide</button></div>
+          <p class="form-hint" id="libraryResultCount"></p>
+          <div id="productLibraryGroups"></div>
+        </section>
+      </main>
+    </div>
+    <nav class="mobile-bottom-nav" aria-label="手机底部菜单">
+      <a class="nav-link active" href="#overview" data-section="overview" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3Z M9 20v-7h6v7" /></svg><span>概览</span></a>
+      <a class="nav-link" href="#inventory" data-section="inventory"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4Z M4 9h16 M9 9v11" /></svg><span>库存</span></a>
+      <a class="nav-link" href="#ledger" data-section="ledger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20V4m-4 4 4-4 4 4 M16 4v16m-4-4 4 4 4-4" /></svg><span>流水</span></a>
+      <a class="nav-link" href="#products" data-section="products"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18H4Z M8 7h8 M8 12h8 M8 17h5" /></svg><span>商品库</span></a>
+    </nav>
+
+    <dialog id="productDialog">
+      <form method="dialog" id="productForm">
+        <div class="dialog-head"><div><p class="eyebrow">PRODUCT LIBRARY</p><h2 id="productDialogTitle">添加商品</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭">×</button></div>
+        <div class="form-grid">
+          <label><span>商品类别</span><select name="category" required><option value="">先选择类别</option><option>相纸</option><option>相机</option></select></label>
+          <label id="productSeriesField" class="hidden"><span>相纸系列</span><select name="series"><option value="">再选择系列</option><option value="Mini">Mini</option><option value="SQ">SQ</option><option value="Wide">Wide</option></select></label>
+          <label id="productModelField" class="hidden"><span id="productModelLabel">具体型号</span><input name="model" placeholder="如：Kitty、彩虹" required /></label>
+          <label id="productSpecField" class="hidden"><span id="productSpecLabel">颜色（选填）</span><input name="spec" placeholder="如：粉色、白色" /></label>
+          <label id="productCapacityField" class="hidden"><span>每盒张数</span><input name="capacity" type="number" min="1" step="1" value="10" required /></label>
+          <label><span>官方价</span><input name="officialPrice" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+        </div>
+        <div class="product-image-editor">
+          <label><span>商品图片（选填）</span><input type="file" id="productImageInput" accept="image/jpeg,image/png,image/webp" /></label>
+          <div class="product-image-preview"><img id="productImagePreview" alt="商品图片预览" hidden /><span id="productImageEmpty">未上传时使用默认商品图</span></div>
+          <button type="button" class="text-button hidden" id="productImageRemove">恢复默认图片</button>
+          <p class="form-hint" id="productImageStatus">支持 JPG、PNG、WebP，图片会自动压缩；保存商品后随库存同步。</p>
+        </div>
+        <p class="form-hint" id="productFormHint">请先选择相纸或相机。</p>
+        <div class="dialog-actions"><button class="button ghost" type="button" data-close-dialog>取消</button><button class="button primary" value="default" id="productSubmitButton">保存商品</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="transactionDialog">
+      <form method="dialog" id="transactionForm">
+        <div class="dialog-head"><div><p class="eyebrow">RECORD</p><h2 id="transactionDialogTitle">记录一笔流水</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭">×</button></div>
+        <div class="type-picker">
+          <label><input type="radio" name="type" value="purchase" checked /><span>购入</span></label>
+          <label><input type="radio" name="type" value="sale" /><span>售出</span></label>
+          <label><input type="radio" name="type" value="use" /><span>使用</span></label>
+        </div>
+        <div class="form-grid">
+          <div class="transaction-context full hidden" id="transactionContext"></div>
+          <div class="full product-selector" id="transactionProductField">
+            <label><span>商品类别</span><select name="productCategory" required><option value="">先选择类别</option><option value="相机">相机</option><option value="相纸">相纸</option></select></label>
+            <label id="transactionSeriesField" class="hidden"><span>相纸系列</span><select name="productSeries"><option value="">再选择系列</option></select></label>
+            <label id="transactionModelField"><span>具体商品</span><select name="productId" required><option value="">请先选择类别</option></select></label>
+          </div>
+          <label id="transactionDateField"><span>日期</span><input name="date" type="date" required /></label>
+          <label id="lotIdField"><span>批次流水号</span><input name="lotId" readonly placeholder="选择商品后自动生成" /></label>
+          <label class="full hidden" id="batchField"><span>扣减库存批次</span><select name="batchKey"><option value="">请选择有库存的批次</option></select></label>
+          <label id="expiryField"><span>有效期（可后补）</span><input name="expiry" type="month" /><small>仅需填写年月；暂时不清楚可以留空。</small></label>
+          <label id="quantityField"><span>数量</span><input name="quantity" type="number" min="0.5" step="0.5" value="1" required /><small id="quantityHint">相纸按整盒或 0.5 盒填写。</small></label>
+          <label id="unitPriceField"><span>单价</span><input name="unitPrice" type="number" min="0" step="0.01" value="0" required /></label>
+          <label id="regionField"><span>平台</span><input name="region" placeholder="如：淘宝、京东、拼多多" /></label>
+          <label id="counterpartyField"><span>店铺名称</span><input name="counterparty" placeholder="选填" /></label>
+          <label class="full checkbox-line" id="transferField"><input type="checkbox" name="originalTransfer" /><span><b>朋友原价转让</b><small>这笔流水计入售出金额，但不计入真实利润与平均售价</small></span></label>
+          <label class="full" id="notesField"><span>备注</span><textarea name="notes" rows="2" placeholder="选填"></textarea></label>
+        </div>
+        <p class="form-error" id="transactionError"></p>
+        <div class="dialog-actions"><button class="button ghost" type="button" data-close-dialog>取消</button><button class="button primary" value="default" id="transactionSubmitButton">保存流水</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="dataDialog">
+      <form method="dialog">
+        <div class="dialog-head"><div><p class="eyebrow">DATA</p><h2>数据管理</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭">×</button></div>
+        <div class="data-actions">
+          <button class="data-action" type="button" id="exportJson"><span>JSON</span><div><strong>导出完整备份</strong><small>保留商品、流水和设置，可再次导入。</small></div></button>
+          <button class="data-action" type="button" id="exportCsv"><span>CSV</span><div><strong>导出流水表</strong><small>适合用 Excel 或飞书继续整理。</small></div></button>
+          <label class="data-action"><span>↑</span><div><strong>导入 JSON 备份</strong><small>导入前会先校验数据格式。</small></div><input id="importJson" type="file" accept="application/json,.json" hidden /></label>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="expiryDialog">
+      <form method="dialog" id="expiryForm">
+        <div class="dialog-head"><div><p class="eyebrow">REMINDER</p><h2>到期提醒范围</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭">×</button></div>
+        <label class="single-field"><span>提前多少天提醒</span><input name="days" type="number" min="1" max="730" required /></label>
+        <div class="dialog-actions"><button class="button ghost" type="button" data-close-dialog>取消</button><button class="button primary" value="default">保存设置</button></div>
+      </form>
+    </dialog>
+
+
+    <dialog id="inventoryShareDialog">
+      <div class="share-dialog-content">
+        <div class="dialog-head"><h2>库存分享图</h2><button type="button" class="icon-button" data-close-dialog aria-label="关闭">×</button></div>
+        <label class="single-field"><span>相纸范围</span><select id="shareFilmSeries"><option value="">全部相纸</option><option value="Mini">Mini</option><option value="SQ">SQ</option><option value="Wide">Wide</option></select></label>
+        <p class="form-hint">只展示当前剩余相纸的型号和盒数，同型号合并。全部相纸生成一张向下延伸的长图，不包含价格或流水。</p>
+        <p id="inventoryShareStatus" role="status"></p>
+        <div class="share-image-preview"><img id="inventorySharePreview" alt="相纸库存分享图预览" hidden /></div>
+        <div class="dialog-actions"><button type="button" class="button ghost" data-close-dialog>关闭</button><button type="button" class="button" id="shareNative" disabled>分享图片</button><button type="button" class="button primary" id="shareDownload" disabled>保存图片</button></div>
+        <p class="form-hint">手机点击保存图片会优先打开系统分享面板，可查看是否有「存储图像」。也可以长按预览图保存到相册。</p>
+      </div>
+    </dialog>
+    <div class="toast" id="toast" role="status"></div>
+    <input id="importFile" type="file" hidden />
+    <script type="module" src="/app.js?v=public-template-1"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "instax-film-inventory-template",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs && npm run test:ui",
+    "test:ui": "npm run build && node scripts/dom-smoke.mjs",
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && wrangler pages dev dist/client",
+    "deploy": "npm run build && wrangler pages deploy dist/client",
+    "db:migrate": "wrangler d1 migrations apply instax-film-inventory --remote"
+  },
+  "devDependencies": {
+    "linkedom": "0.18.12",
+    "wrangler": "^4.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+import { cp, mkdir, rm } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const client = resolve(root, "dist/client");
+await rm(resolve(root, "dist"), { recursive: true, force: true });
+await mkdir(client, { recursive: true });
+await cp(resolve(root, "public"), client, { recursive: true });
+for (const name of ["core.mjs", "product-catalog.mjs", "state-validation.mjs"]) await cp(resolve(root, "src", name), resolve(client, name));
+console.log("Built inventory template assets");
