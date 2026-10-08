@@ -328,7 +328,7 @@ body.sync-conflict #addProductButton, body.sync-conflict #addTransactionButton, 
 
 /* Classic rainbow camera: warm shell, dark controls, five colour accents. */
 :root { --rainbow: linear-gradient(90deg, #e84d3d 0% 20%, #ef8737 20% 40%, #efbd3e 40% 60%, #55a77c 60% 80%, #438ac8 80% 100%); }
-.brand-mark, .brand-mark.small { width: 48px; height: 48px; background: url('/assets/rainbow-front-logo.webp') center / contain no-repeat; box-shadow: none; border-radius: 0; transform: none; }
+.brand-mark, .brand-mark.small { width: 48px; height: 48px; background: url('/assets/cream-rainbow-logo.webp') center / contain no-repeat; box-shadow: none; border-radius: 0; transform: none; }
 .brand-mark::before, .brand-mark::after, .brand-mark.small::before { content: none; }
 .brand-mark.small { width: 42px; height: 42px; }
 .sidebar { border-right-color: var(--line); }
@@ -500,3 +500,15 @@ body.sync-conflict #libraryAddProduct { pointer-events: none; opacity: .45; }
 .delete-product { border: 0; background: transparent; color: #b16b55; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 4px; flex-shrink: 0; }
 body.read-only .delete-product { display: none; }
 body.sync-conflict .delete-product { pointer-events: none; opacity: .45; }
+
+/* Shared monoline navigation icons, desktop and mobile. */
+.nav-link { color: #827e75; }
+.nav-link > span { width: auto; text-align: left; font-size: inherit; font-weight: inherit; }
+.nav-link .nav-icon { width: 24px; height: 24px; flex: 0 0 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav-link:hover, .nav-link.active { color: #397aa0; background: #eaf1f6; }
+.nav-link.active::after { display: none; }
+@media (max-width: 760px) {
+  .mobile-bottom-nav .nav-link { color: #827e75; }
+  .mobile-bottom-nav .nav-link.active { color: #397aa0; background: #eaf1f6; }
+  .mobile-bottom-nav .nav-icon { width: 22px; height: 22px; flex-basis: 22px; }
+}

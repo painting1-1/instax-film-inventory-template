@@ -8,8 +8,8 @@
   "theme_color": "#faf8f1",
   "icons": [
     {
-      "src": "/assets/rainbow-front-icon.png",
-      "sizes": "any",
+      "src": "/assets/cream-rainbow-icon.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
