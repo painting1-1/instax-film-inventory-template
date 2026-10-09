@@ -524,3 +524,19 @@ body.sync-conflict .delete-product { pointer-events: none; opacity: .45; }
   .expiry-panel .panel-head { flex: 0 0 auto; }
   .expiry-list { flex: 1 1 auto; min-height: 0; max-height: none; align-content: start; }
 }
+
+/* Desktop headings remain attached to their own data section while the page scrolls. */
+@media (min-width: 761px) {
+  .inventory-table, .inventory-table .table-wrap, .ledger-list { overflow: visible; }
+  .inventory-table thead { position: sticky; top: 0; z-index: 5; }
+  .inventory-table th, .ledger-row.header {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--panel);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .ledger-row.header { position: sticky; top: 0; z-index: 5; }
+  .inventory-table th:first-child, .ledger-row.header { border-top-left-radius: 18px; }
+  .inventory-table th:last-child, .ledger-row.header { border-top-right-radius: 18px; }
+}
