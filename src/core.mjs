@@ -75,6 +75,7 @@ export function normalizeTransaction(tx) {
     quantity: Math.max(0, safeNumber(tx.quantity)),
     unitPrice: Math.max(0, safeNumber(tx.unitPrice)),
     expiry: /^\d{4}-\d{2}/.test(expiry) ? expiry.slice(0, 7) : "",
+    ...(!/^\d{4}-\d{2}/.test(expiry) && tx.expiryStatus === "unknown" ? { expiryStatus: "unknown" } : {}),
     region: cleanText(tx.region),
     counterparty: cleanText(tx.counterparty),
     originalTransfer: Boolean(tx.originalTransfer),
@@ -302,4 +303,21 @@ export function transactionStatus(stateInput, txId) {
   if (tx.type === "use") return "已用";
   const remaining = availableBatchQuantity(state, tx.productId, tx.lotId, tx.expiry);
   return remaining > 0 ? `库存 ${remaining}` : "已清空";
+}
+
+/** Missing film expiry is pending unless the owner explicitly marked it unknown. */
+export function transactionExpiryStatus(state, tx) {
+  const product = state.products.find(item => item.id === tx.productId);
+  if (product?.category !== "相纸") return "not-applicable";
+  if (tx.expiry) return "known";
+  if (tx.expiryStatus === "unknown") return "unknown";
+  const purchase = state.transactions.find(item => item.type === "purchase"
+    && batchKey(item.productId, item.lotId, item.expiry) === batchKey(tx.productId, tx.lotId, tx.expiry));
+  return purchase?.expiryStatus === "unknown" ? "unknown" : "pending";
+}
+export function matchesExpiryFilter(state, tx, filter) {
+  if (!filter) return true;
+  if (filter === "__pending") return transactionExpiryStatus(state, tx) === "pending";
+  if (filter === "__unknown") return transactionExpiryStatus(state, tx) === "unknown";
+  return tx.expiry === filter;
 }

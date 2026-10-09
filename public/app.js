@@ -1,5 +1,7 @@
 import {
   EMPTY_STATE,
+  matchesExpiryFilter,
+  transactionExpiryStatus,
   calculateInventory,
   money,
   nextSerial,
@@ -405,8 +407,9 @@ function updateFilterOptions(result) {
     ["#expiryFilter", expiry, current.expiry, "全部有效期"], ["#ledgerExpiry", expiry, current.ledgerExpiry, "全部有效期"],
   ]) {
     const select = $(id);
-    select.innerHTML = `<option value="">${first}</option>${values.map((value) => `<option value="${escapeHtml(value)}">${id.includes("Expiry") || id.includes("expiry") ? formatExpiry(value) : escapeHtml(value)}</option>`).join("")}`;
-    select.value = values.includes(selected) ? selected : "";
+    const extra = id === "#ledgerExpiry" ? `<option value="__pending">待补有效期</option><option value="__unknown">有效期未知</option>` : "";
+    select.innerHTML = `<option value="">${first}</option>${extra}${values.map((value) => `<option value="${escapeHtml(value)}">${id.includes("Expiry") || id.includes("expiry") ? formatExpiry(value) : escapeHtml(value)}</option>`).join("")}`;
+    select.value = values.includes(selected) || (id === "#ledgerExpiry" && ["__pending", "__unknown"].includes(selected)) ? selected : "";
   }
 }
 
@@ -464,7 +467,7 @@ function renderLedger(result) {
     return (transactionType === "全部" || tx.type === transactionType)
       && (!category || product.category === category)
       && (!series || product.series === series)
-      && (!expiry || tx.expiry === expiry)
+      && matchesExpiryFilter(state, tx, expiry)
       && (!query || haystack.includes(query));
   });
 
@@ -477,9 +480,12 @@ function renderLedger(result) {
   list.innerHTML = `<div class="ledger-row header"><span class="ledger-date">购入日期</span><span class="ledger-product">商品</span><span class="ledger-batch">有效期</span><span class="ledger-type">类型</span><span class="ledger-quantity">数量</span><span class="ledger-unit-price">单价 / 状态</span><span></span></div>` + rows.map((tx) => {
     const product = getProduct(tx.productId) || {};
     const unitAmount = tx.type === "use" ? "—" : money(tx.unitPrice);
+    const expiryState = transactionExpiryStatus(state, tx);
     const expiryCell = product.category === "相机"
       ? `<span class="expiry-na">不适用</span>`
-      : tx.expiry
+      : expiryState === "unknown"
+        ? `<span class="expiry-missing-text">有效期未知</span>`
+        : tx.expiry
         ? formatExpiry(tx.expiry)
         : tx.type === "purchase"
           ? `<button class="expiry-missing" data-edit="${escapeHtml(tx.id)}">待补有效期</button>`
@@ -912,6 +918,7 @@ refs.transactionForm.addEventListener("submit", (event) => {
     counterparty: form.get("counterparty"),
     originalTransfer: form.get("originalTransfer") === "on",
     notes: form.get("notes"),
+    expiryStatus: existing?.expiryStatus === "unknown" && !form.get("expiry") ? "unknown" : undefined,
     createdAt: existing?.createdAt || new Date().toISOString(),
   };
   const error = validateTransaction(baseState, tx);
@@ -928,7 +935,7 @@ refs.transactionForm.addEventListener("submit", (event) => {
     state.transactions = state.transactions.map((item) => {
       if (item.id === editingTransactionId) return tx;
       const belongsToEditedPurchase = existing?.type === "purchase" && item.type !== "purchase" && item.productId === existing.productId && item.lotId === existing.lotId;
-      return belongsToEditedPurchase ? { ...item, expiry: tx.expiry } : item;
+      return belongsToEditedPurchase ? { ...item, expiry: tx.expiry, expiryStatus: tx.expiryStatus } : item;
     });
   } else state.transactions.push(tx);
   refs.transactionDialog.close();
@@ -1057,7 +1064,7 @@ $("#exportCsv").addEventListener("click", () => {
   const header = ["流水号", "日期", "类型", "类别", "系列", "型号", "颜色/规格", "数量", "单价", "金额", "有效期", "平台", "店铺名称/交易对象", "朋友原价转让", "状态", "备注"];
   const lines = state.transactions.map((tx) => {
     const product = getProduct(tx.productId) || {};
-    return cells([tx.lotId || tx.id, tx.date, typeLabel(tx.type), product.category, product.series, product.model, product.spec, tx.quantity, tx.unitPrice, tx.quantity * tx.unitPrice, tx.expiry, tx.region, tx.counterparty, tx.originalTransfer ? "是" : "否", transactionStatus(state, tx.id), tx.notes]);
+    return cells([tx.lotId || tx.id, tx.date, typeLabel(tx.type), product.category, product.series, product.model, product.spec, tx.quantity, tx.unitPrice, tx.quantity * tx.unitPrice, transactionExpiryStatus(state, tx) === "unknown" ? "有效期未知" : tx.expiry, tx.region, tx.counterparty, tx.originalTransfer ? "是" : "否", transactionStatus(state, tx.id), tx.notes]);
   });
   download(`拍立得流水_${dateToday()}.csv`, `\ufeff${cells(header)}\n${lines.join("\n")}`, "text/csv;charset=utf-8");
   toast("流水 CSV 已导出");

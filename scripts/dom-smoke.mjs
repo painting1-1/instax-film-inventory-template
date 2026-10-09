@@ -413,3 +413,11 @@ for (const link of bottomLinks) {
   if (activeLinks.length !== 2 || activeLinks.some(item => item.dataset.section !== link.dataset.section || item.getAttribute('aria-current') !== 'page')) throw Error('底部与侧边导航选中状态不同步');
 }
 console.log(JSON.stringify({mobileBottomNavigation:true, navigationHighlightSynced:true}));
+
+setValue("#ledgerExpiry", "__pending").dispatchEvent(new window.Event("change"));
+if (document.querySelector("#ledgerExpiry").value !== "__pending") throw Error("待补有效期筛选被重置");
+if (!document.querySelector('#ledgerExpiry option[value="__unknown"]')) throw Error("缺少有效期未知筛选");
+setValue("#ledgerExpiry", "__unknown").dispatchEvent(new window.Event("change"));
+if (document.querySelector("#ledgerExpiry").value !== "__unknown") throw Error("未知有效期筛选被重置");
+setValue("#ledgerExpiry", "").dispatchEvent(new window.Event("change"));
+console.log(JSON.stringify({pendingExpiryFilter:true,unknownExpiryFilter:true,expirySelectionPersists:true}));
