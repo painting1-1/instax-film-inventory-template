@@ -302,6 +302,12 @@ if (document.querySelector("#inventoryBody .product-cell strong")?.textContent !
   || document.querySelector("#inventoryBody .product-cell small")?.textContent !== "相纸") {
   throw new Error("白边相纸没有直接显示装数规格");
 }
+const historyState = JSON.parse(localStorage.getItem("instant-inventory-state"));
+const historyProductId = historyState.products.find(p => p.category === "相纸" && p.series === "Mini" && p.spec === "单白").id;
+const historyPurchases = historyState.transactions.filter(t => t.productId === historyProductId && t.type === "purchase");
+const expectedHistoryPrice = historyPurchases.reduce((sum, t) => sum + t.quantity * t.unitPrice, 0) / historyPurchases.reduce((sum, t) => sum + t.quantity, 0);
+if (Math.abs(numberFromText(document.querySelector("#inventoryBody .inventory-history-price").textContent) - expectedHistoryPrice) > 0.005) throw new Error("历史购入均价未按全部购入数量加权计算");
+if (!document.querySelector(".inventory-table thead").textContent.includes("当前库存均价") || !document.querySelector(".inventory-table thead").textContent.includes("历史购入均价")) throw new Error("库存均价表头不清晰");
 if (document.querySelector("#inventoryBody").textContent.includes("张")) throw new Error("库存概览仍显示剩余张数");
 if (document.body.textContent.includes("市场价值") || document.querySelector('#productForm [name="marketPrice"]')) throw new Error("网站仍显示或录入市场价值");
 if (!document.querySelector("#officialInventoryValue")?.textContent.includes("¥")) throw new Error("首页没有显示当前库存官方价总额");

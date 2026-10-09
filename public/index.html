@@ -111,7 +111,7 @@
 
         <section id="inventory" class="page-section">
           <div class="section-head">
-            <div><p class="eyebrow">INVENTORY</p><h2>库存概览</h2><p>同一型号的不同批次合并统计，查看剩余数量和平均购入价。</p></div>
+            <div><p class="eyebrow">INVENTORY</p><h2>库存概览</h2><p>同一型号的不同批次合并统计，查看剩余数量、当前库存均价和历史购入均价。</p></div>
             <div class="inventory-head-actions"><button type="button" class="button ghost" id="inventoryShareButton">分享库存</button><div class="segmented" id="inventoryCategory">
               <button class="active" data-value="全部">全部</button><button data-value="相纸">相纸</button><button data-value="相机">相机</button>
             </div>
@@ -129,7 +129,7 @@
           <div class="inventory-table panel">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>商品型号</th><th class="num">剩余数量</th><th class="num">平均购入价</th><th></th></tr></thead>
+                <thead><tr><th>商品型号</th><th class="num">剩余数量</th><th class="num">当前库存均价</th><th class="num" title="所有历史购入总金额 ÷ 总购入数量">历史购入均价</th><th></th></tr></thead>
                 <tbody id="inventoryBody"></tbody>
               </table>
             </div>

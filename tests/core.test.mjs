@@ -109,3 +109,14 @@ test("编号和购入流水状态符合规则", () => {
   assert.equal(transactionStatus(state, "tx3"), "原价转让");
 });
 
+
+ test("历史购入均价包含已清空批次并按数量加权", () => {
+ const input = { products: [state.products[0]], transactions: [
+ { id: "old", type: "purchase", productId: "film001", lotId: "old", date: "2025-01-01", quantity: 1, unitPrice: 100 },
+ { id: "sold", type: "sale", productId: "film001", lotId: "old", date: "2025-01-02", quantity: 1, unitPrice: 150 },
+ { id: "new", type: "purchase", productId: "film001", lotId: "new", date: "2026-01-01", quantity: 9, unitPrice: 60 },
+ ] };
+ const result = calculateInventory(input);
+ assert.equal(result.productStats[0].averagePurchasePrice, 64);
+ assert.equal(result.activeBatches[0].averageCost, 60);
+ });

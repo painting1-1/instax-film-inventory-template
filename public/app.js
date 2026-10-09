@@ -431,9 +431,11 @@ function renderInventory(result) {
     current.costValue += batch.quantity * batch.averageCost;
     grouped.set(batch.product.id, current);
   }
+  const historicalPrices = new Map(result.productStats.map((stats) => [stats.product.id, stats.averagePurchasePrice]));
   const rows = [...grouped.values()].map((item) => ({
     ...item,
     averageCost: item.quantity ? item.costValue / item.quantity : 0,
+    historicalAverage: historicalPrices.get(item.product.id) ?? 0,
   })).sort((a, b) => `${a.product.category}${a.product.series}${a.product.model}${a.product.spec}`.localeCompare(`${b.product.category}${b.product.series}${b.product.model}${b.product.spec}`, "zh-CN"));
 
   const activeFilters = [series, expiry].filter(Boolean).length;
@@ -448,7 +450,8 @@ function renderInventory(result) {
     return `<tr>
       <td><div class="product-cell">${productVisual(item.product)}<div><strong>${escapeHtml(productName(item.product))}</strong><small>${escapeHtml(productSubline(item.product))}</small></div></div></td>
       <td class="num"><strong>${numberText(item.quantity)}</strong> ${unit}</td>
-      <td class="num">${money(item.averageCost)}</td>
+      <td class="num inventory-current-price">${money(item.averageCost)}</td>
+      <td class="num inventory-history-price" title="所有历史购入总金额 ÷ 总购入数量">${money(item.historicalAverage)}<span class="mobile-price-unit">/${unit}</span></td>
       <td><button class="edit-product" data-edit-product="${escapeHtml(item.product.id)}">编辑</button></td>
     </tr>`;
   }).join("");

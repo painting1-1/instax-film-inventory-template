@@ -125,6 +125,7 @@ label > small { display: block; margin-top: 6px; color: var(--muted); font-size:
 input, select, textarea { width: 100%; border: 1px solid #dddcd4; border-radius: 10px; padding: 10px 11px; background: #fffefb; color: var(--ink); outline: none; transition: .15s; }
 input:focus, select:focus, textarea:focus { border-color: #8caa9c; box-shadow: 0 0 0 3px rgba(82,121,106,.1); }
 .clear-filter { min-height: 39px; font-size: 11px; }
+.mobile-price-unit { display: none; }
 .inventory-table { min-height: 270px; overflow: hidden; }
 .table-wrap { overflow: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 760px; }
@@ -283,11 +284,14 @@ dialog form { padding: 25px; }
   .inventory-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; padding: 14px; border-bottom: 1px solid #ece9e1; }
   .inventory-table tbody tr:last-child { border-bottom: 0; }
   .inventory-table td { display: block; padding: 0; border: 0; }
-  .inventory-table td:first-child { grid-column: 1; grid-row: 1 / 4; min-width: 0; }
+  .inventory-table td:first-child { grid-column: 1; grid-row: 1 / 5; min-width: 0; }
   .inventory-table td:nth-child(2) { grid-column: 2; grid-row: 1; text-align: right; white-space: nowrap; }
   .inventory-table td:nth-child(3) { grid-column: 2; grid-row: 2; text-align: right; white-space: nowrap; color: var(--muted); font-size: 13px; }
-  .inventory-table td:nth-child(3)::before { content: "均价 "; font-size: 11px; color: #98a09c; }
-  .inventory-table td:nth-child(4) { grid-column: 2; grid-row: 3; text-align: right; }
+  .inventory-table td:nth-child(3)::before { content: "库存均价 "; font-size: 11px; color: #98a09c; }
+  .inventory-table td:nth-child(4) { grid-column: 2; grid-row: 3; text-align: right; white-space: nowrap; color: var(--muted); font-size: 12px; }
+  .inventory-table td:nth-child(4)::before { content: "历史 "; font-size: 11px; color: #98a09c; }
+  .inventory-table .mobile-price-unit { display: inline; }
+  .inventory-table td:nth-child(5) { grid-column: 2; grid-row: 4; text-align: right; }
   .inventory-table .product-cell { min-width: 0; gap: 10px; }
   .inventory-table .product-cell > div { min-width: 0; }
   .inventory-table .product-visual { width: 48px; height: 52px; }
