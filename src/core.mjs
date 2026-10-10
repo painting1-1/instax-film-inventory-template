@@ -38,6 +38,7 @@ export function normalizeState(input) {
     settings: {
       expiryWarningDays: Math.max(1, Math.round(safeNumber(source.settings?.expiryWarningDays, 90))),
       productCatalogVersion: cleanText(source.settings?.productCatalogVersion),
+      platforms: normalizePlatforms(source.settings?.platforms),
     },
   };
 }
@@ -320,4 +321,15 @@ export function matchesExpiryFilter(state, tx, filter) {
   if (filter === "__pending") return transactionExpiryStatus(state, tx) === "pending";
   if (filter === "__unknown") return transactionExpiryStatus(state, tx) === "unknown";
   return tx.expiry === filter;
+}
+
+// Preserve reusable platform choices through cloud sync and JSON backups.
+export function normalizePlatforms(values = []) {
+  const names = new Map();
+  for (const value of Array.isArray(values) ? values : []) {
+    const name = cleanText(value);
+    const key = name.toLocaleLowerCase();
+    if (name && !names.has(key)) names.set(key, name);
+  }
+  return [...names.values()];
 }

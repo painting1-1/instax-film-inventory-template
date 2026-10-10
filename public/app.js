@@ -1,5 +1,6 @@
 import {
   EMPTY_STATE,
+  normalizePlatforms,
   matchesExpiryFilter,
   transactionExpiryStatus,
   calculateInventory,
@@ -173,7 +174,7 @@ function mergeStates(remoteState, localState, preferLocal = true, preferLocalPro
       return [...merged.values()];
     })(),
     transactions: mergeById(remote.transactions, local.transactions),
-    settings: preferLocal ? { ...remote.settings, ...local.settings } : { ...local.settings, ...remote.settings },
+    settings: { ...(preferLocal ? { ...remote.settings, ...local.settings } : { ...local.settings, ...remote.settings }), platforms: normalizePlatforms([...(remote.settings.platforms || []), ...(local.settings.platforms || [])]) },
   });
 }
 
@@ -747,6 +748,7 @@ function openTransactionDialog(transactionId = null, actionType = null, purchase
   editingTransactionId = transactionId;
   sourcePurchaseId = purchaseId;
   refs.transactionForm.reset();
+  renderPlatformChoices();
   refs.transactionForm.elements.productCategory.disabled = false;
   refs.transactionForm.elements.productSeries.disabled = false;
   refs.transactionForm.elements.productId.disabled = false;
@@ -770,7 +772,7 @@ function openTransactionDialog(transactionId = null, actionType = null, purchase
       refs.transactionForm.elements.lotId.value = tx.lotId || "";
       refs.transactionForm.elements.expiry.value = tx.expiry || "";
     }
-    refs.transactionForm.elements.region.value = tx.region || "";
+    refs.transactionForm.elements.platformChoice.value = tx.region || "";
     refs.transactionForm.elements.counterparty.value = tx.counterparty || "";
     refs.transactionForm.elements.originalTransfer.checked = Boolean(tx.originalTransfer);
     refs.transactionForm.elements.notes.value = tx.notes || "";
@@ -809,7 +811,7 @@ function updateTransactionFields(preferredBatch = null) {
   const isPurchase = type === "purchase";
   const isSale = type === "sale";
   $('#counterpartyField span').textContent = isSale ? '交易对象' : '店铺名称';
-  refs.transactionForm.elements.region.placeholder = isSale ? '如：闲鱼' : '如：淘宝、京东、拼多多';
+
   const isCamera = product?.category === "相机";
   const isFilm = product?.category === "相纸";
   setTransactionFieldVisible("#transactionProductField", isPurchase);
@@ -917,7 +919,7 @@ refs.transactionForm.addEventListener("submit", (event) => {
     expiry: type === "purchase" && product?.category !== "相机" ? form.get("expiry") : selectedBatch?.expiry || "",
     quantity: Number(form.get("quantity")),
     unitPrice: Number(form.get("unitPrice")) || 0,
-    region: form.get("region"),
+    region: type === "use" ? "" : selectedPlatform(form),
     counterparty: form.get("counterparty"),
     originalTransfer: form.get("originalTransfer") === "on",
     notes: form.get("notes"),
@@ -941,6 +943,7 @@ refs.transactionForm.addEventListener("submit", (event) => {
       return belongsToEditedPurchase ? { ...item, expiry: tx.expiry, expiryStatus: tx.expiryStatus } : item;
     });
   } else state.transactions.push(tx);
+  state.settings.platforms = normalizePlatforms([...(state.settings.platforms || []), tx.region]);
   refs.transactionDialog.close();
   persist(editingTransactionId ? `流水 ${tx.lotId || tx.id} 已修改` : `${typeLabel(tx.type)}流水 ${tx.lotId || tx.id} 已保存`);
   editingTransactionId = null;
@@ -1253,4 +1256,26 @@ $("#shareDownload").addEventListener("click", async () => {
 $("#shareNative").addEventListener("click", async () => {
   if (!shareBlob) return;
   if (!await openImageShare()) toast("手机可长按预览图保存；电脑请点击保存图片。");
+});
+
+function platformChoices() {
+  return normalizePlatforms([
+    '淘宝', '京东', '拼多多', '抖音', '闲鱼',
+    ...(state.settings.platforms || []),
+    ...state.transactions.map(tx => tx.region),
+  ]);
+}
+function renderPlatformChoices() {
+  refs.transactionForm.elements.platformChoice.innerHTML = '<option value="">选择平台</option>' + platformChoices().map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+}
+function selectedPlatform(form) {
+  const typed = String(form.get('region') || '').trim();
+  const value = typed || String(form.get('platformChoice') || '').trim();
+  return platformChoices().find(name => name.toLocaleLowerCase() === value.toLocaleLowerCase()) || value;
+}
+refs.transactionForm.elements.platformChoice.addEventListener('change', () => {
+  refs.transactionForm.elements.region.value = '';
+});
+refs.transactionForm.elements.region.addEventListener('input', () => {
+  if (refs.transactionForm.elements.region.value.trim()) refs.transactionForm.elements.platformChoice.value = '';
 });

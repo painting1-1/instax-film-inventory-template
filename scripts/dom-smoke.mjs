@@ -158,7 +158,7 @@ function addDeduction(sourceId, type, quantity, price = 0, transfer = false) {
   setValue('#transactionForm input[name="quantity"]', quantity);
   setValue('#transactionForm input[name="unitPrice"]', price);
   if (type === "sale") {
-    if (document.querySelector('#counterpartyField span').textContent !== '交易对象' || document.querySelector('#regionField input').placeholder !== '如：闲鱼') throw Error('售出字段标签与提示错误');
+    if (document.querySelector('#counterpartyField span').textContent !== '交易对象' || document.querySelector('#regionField input').placeholder !== '填写新平台，保存后自动加入') throw Error('售出字段标签与提示错误');
     setValue('#transactionForm input[name="region"]', "闲鱼");
     setValue('#transactionForm input[name="counterparty"]', "测试买家");
   }
@@ -393,7 +393,7 @@ await new Promise(resolve => setTimeout(resolve, 20));
 const afterDelete = JSON.parse(localStorage.getItem('instant-inventory-state'));
 if (afterDelete.products.some(product => product.id === unusedId) || JSON.stringify(afterDelete.transactions) !== JSON.stringify(beforeDelete.transactions)) throw Error('商品删除或历史流水保护错误');
 document.querySelector('#addTransactionButton').click();
-if (document.querySelector('#regionField input').placeholder !== '如：淘宝、京东、拼多多') throw Error('购入平台提示错误');
+if (document.querySelector('#regionField input').placeholder !== '填写新平台，保存后自动加入') throw Error('购入平台提示错误');
 if (document.querySelector('#regionField span').textContent !== '平台' || document.querySelector('#counterpartyField span').textContent !== '店铺名称') throw Error('流水字段文案未更新');
 document.querySelector('#transactionDialog [data-close-dialog]').click();
 console.log(JSON.stringify({unusedProductDeletion:true, linkedProductProtected:true, deletionCancel:true, transactionLabels:true}));
@@ -427,3 +427,6 @@ setValue("#ledgerExpiry", "__unknown").dispatchEvent(new window.Event("change"))
 if (document.querySelector("#ledgerExpiry").value !== "__unknown") throw Error("未知有效期筛选被重置");
 setValue("#ledgerExpiry", "").dispatchEvent(new window.Event("change"));
 console.log(JSON.stringify({pendingExpiryFilter:true,unknownExpiryFilter:true,expirySelectionPersists:true}));
+
+if (!JSON.parse(localStorage.getItem('instant-inventory-state')).settings.platforms.includes('闲鱼')) throw Error('新增平台未随流水持久化');
+if (!document.querySelector('#transactionForm select[name="platformChoice"] option[value="闲鱼"]')) throw Error('已保存平台不能再次选择');

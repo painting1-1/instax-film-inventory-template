@@ -217,7 +217,7 @@
           <label id="expiryField"><span>有效期（可后补）</span><input name="expiry" type="month" /><small>仅需填写年月；暂时不清楚可以留空。</small></label>
           <label id="quantityField"><span>数量</span><input name="quantity" type="number" min="0.5" step="0.5" value="1" required /><small id="quantityHint">相纸按整盒或 0.5 盒填写。</small></label>
           <label id="unitPriceField"><span>单价</span><input name="unitPrice" type="number" min="0" step="0.01" value="0" required /></label>
-          <label id="regionField"><span>平台</span><input name="region" placeholder="如：淘宝、京东、拼多多" /></label>
+          <label id="regionField"><span>平台</span><select name="platformChoice" aria-label="选择平台"></select><input name="region" placeholder="填写新平台，保存后自动加入" aria-label="新平台" autocomplete="off" /></label>
           <label id="counterpartyField"><span>店铺名称</span><input name="counterparty" placeholder="选填" /></label>
           <label class="full checkbox-line" id="transferField"><input type="checkbox" name="originalTransfer" /><span><b>朋友原价转让</b><small>这笔流水计入售出金额，但不计入真实利润与平均售价</small></span></label>
           <label class="full" id="notesField"><span>备注</span><textarea name="notes" rows="2" placeholder="选填"></textarea></label>
