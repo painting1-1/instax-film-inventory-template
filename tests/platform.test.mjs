@@ -7,3 +7,9 @@ test('平台选项跨备份保留，去除空白和大小写重复，保留地�
  const state = normalizeState({settings:{platforms:names}});
  assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(state))).settings.platforms, state.settings.platforms);
 });
+
+test('购入和售出新增平台独立保留', () => {
+ const state = normalizeState({settings:{purchasePlatforms:['Lazada'],salePlatforms:['闲鱼']}});
+ assert.deepEqual(state.settings.purchasePlatforms,['Lazada']);
+ assert.deepEqual(state.settings.salePlatforms,['闲鱼']);
+});

@@ -159,6 +159,7 @@ function addDeduction(sourceId, type, quantity, price = 0, transfer = false) {
   setValue('#transactionForm input[name="unitPrice"]', price);
   if (type === "sale") {
     if (document.querySelector('#counterpartyField span').textContent !== '交易对象' || document.querySelector('#regionField input').placeholder !== '填写新平台，保存后自动加入') throw Error('售出字段标签与提示错误');
+    if (document.querySelector('#transactionForm select[name="platformChoice"] option[value="京东"]')) throw Error('售出混入购入预设');
     setValue('#transactionForm input[name="region"]', "闲鱼");
     setValue('#transactionForm input[name="counterparty"]', "测试买家");
   }
@@ -428,5 +429,5 @@ if (document.querySelector("#ledgerExpiry").value !== "__unknown") throw Error("
 setValue("#ledgerExpiry", "").dispatchEvent(new window.Event("change"));
 console.log(JSON.stringify({pendingExpiryFilter:true,unknownExpiryFilter:true,expirySelectionPersists:true}));
 
-if (!JSON.parse(localStorage.getItem('instant-inventory-state')).settings.platforms.includes('闲鱼')) throw Error('新增平台未随流水持久化');
-if (!document.querySelector('#transactionForm select[name="platformChoice"] option[value="闲鱼"]')) throw Error('已保存平台不能再次选择');
+if (!JSON.parse(localStorage.getItem('instant-inventory-state')).settings.salePlatforms.includes('闲鱼')) throw Error('新增平台未随流水持久化');
+

@@ -39,6 +39,8 @@ export function normalizeState(input) {
       expiryWarningDays: Math.max(1, Math.round(safeNumber(source.settings?.expiryWarningDays, 90))),
       productCatalogVersion: cleanText(source.settings?.productCatalogVersion),
       platforms: normalizePlatforms(source.settings?.platforms),
+      purchasePlatforms: normalizePlatforms(source.settings?.purchasePlatforms),
+      salePlatforms: normalizePlatforms(source.settings?.salePlatforms),
     },
   };
 }

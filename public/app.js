@@ -174,7 +174,7 @@ function mergeStates(remoteState, localState, preferLocal = true, preferLocalPro
       return [...merged.values()];
     })(),
     transactions: mergeById(remote.transactions, local.transactions),
-    settings: { ...(preferLocal ? { ...remote.settings, ...local.settings } : { ...local.settings, ...remote.settings }), platforms: normalizePlatforms([...(remote.settings.platforms || []), ...(local.settings.platforms || [])]) },
+    settings: { ...(preferLocal ? { ...remote.settings, ...local.settings } : { ...local.settings, ...remote.settings }), platforms: normalizePlatforms([...(remote.settings.platforms || []), ...(local.settings.platforms || [])]), purchasePlatforms: normalizePlatforms([...(remote.settings.purchasePlatforms || []), ...(local.settings.purchasePlatforms || [])]), salePlatforms: normalizePlatforms([...(remote.settings.salePlatforms || []), ...(local.settings.salePlatforms || [])]) },
   });
 }
 
@@ -748,7 +748,6 @@ function openTransactionDialog(transactionId = null, actionType = null, purchase
   editingTransactionId = transactionId;
   sourcePurchaseId = purchaseId;
   refs.transactionForm.reset();
-  renderPlatformChoices();
   refs.transactionForm.elements.productCategory.disabled = false;
   refs.transactionForm.elements.productSeries.disabled = false;
   refs.transactionForm.elements.productId.disabled = false;
@@ -805,6 +804,7 @@ function updateTransactionContext(batch = null) {
 }
 
 function updateTransactionFields(preferredBatch = null) {
+  renderPlatformChoices();
   const type = new FormData(refs.transactionForm).get("type") || "purchase";
   const product = getProduct(refs.transactionForm.elements.productId.value);
   const existing = editingTransactionId ? state.transactions.find((tx) => tx.id === editingTransactionId) : null;
@@ -943,7 +943,10 @@ refs.transactionForm.addEventListener("submit", (event) => {
       return belongsToEditedPurchase ? { ...item, expiry: tx.expiry, expiryStatus: tx.expiryStatus } : item;
     });
   } else state.transactions.push(tx);
-  state.settings.platforms = normalizePlatforms([...(state.settings.platforms || []), tx.region]);
+  if (type !== 'use') {
+    const key = type === 'sale' ? 'salePlatforms' : 'purchasePlatforms';
+    state.settings[key] = normalizePlatforms([...(state.settings[key] || []), tx.region]);
+  }
   refs.transactionDialog.close();
   persist(editingTransactionId ? `流水 ${tx.lotId || tx.id} 已修改` : `${typeLabel(tx.type)}流水 ${tx.lotId || tx.id} 已保存`);
   editingTransactionId = null;
@@ -1258,15 +1261,20 @@ $("#shareNative").addEventListener("click", async () => {
   if (!await openImageShare()) toast("手机可长按预览图保存；电脑请点击保存图片。");
 });
 
-function platformChoices() {
+function platformChoices(type = new FormData(refs.transactionForm).get('type') || 'purchase') {
+  const key = type === 'sale' ? 'salePlatforms' : 'purchasePlatforms';
   return normalizePlatforms([
-    '淘宝', '京东', '拼多多', '抖音', '闲鱼',
-    ...(state.settings.platforms || []),
-    ...state.transactions.map(tx => tx.region),
+    ...(type === 'sale' ? ['闲鱼'] : ['淘宝', '京东', '拼多多', '抖音']),
+    ...(state.settings[key] || []),
+    ...state.transactions.filter(tx => tx.type === type).map(tx => tx.region),
   ]);
 }
 function renderPlatformChoices() {
-  refs.transactionForm.elements.platformChoice.innerHTML = '<option value="">选择平台</option>' + platformChoices().map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  const select = refs.transactionForm.elements.platformChoice;
+  const previous = select.value;
+  const choices = platformChoices();
+  select.innerHTML = '<option value="">选择平台</option>' + choices.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  select.value = choices.includes(previous) ? previous : '';
 }
 function selectedPlatform(form) {
   const typed = String(form.get('region') || '').trim();
