@@ -499,7 +499,7 @@ function renderLedger(result) {
     const isFilmUse = tx.type === "use" && product.category === "相纸";
     return `<div class="ledger-row" data-transaction-id="${escapeHtml(tx.id)}">
       <span class="ledger-date"><small class="ledger-date-label">${typeLabel(tx.type)}日期</small><strong>${formatDate(tx.date).replace(/年|月/g, "/").replace("日", "")}</strong></span>
-      <span class="ledger-product">${productVisual(product, "ledger-visual")}<span><strong>${escapeHtml(productName(product))}</strong><small class="ledger-meta">${escapeHtml([productSubline(product), tx.region].filter(Boolean).join(" · "))}</small></span></span>
+      <span class="ledger-product">${productVisual(product, "ledger-visual")}<span><strong>${escapeHtml(productName(product))}</strong><small class="ledger-meta">${escapeHtml(productSubline(product))}${tx.region ? ` · ${platformMarkup(tx.region)}` : ""}</small></span></span>
       <span class="ledger-batch">${expiryCell}</span>
       <span class="ledger-type"><b class="type-badge ${tx.type}">${typeLabel(tx.type)}</b>${tx.originalTransfer ? `<small class="transfer-mark">原价转让</small>` : ""}</span>
       <span class="ledger-quantity">${numberText(tx.quantity)} ${product.category === "相纸" ? "盒" : "台"}</span>
@@ -772,6 +772,7 @@ function openTransactionDialog(transactionId = null, actionType = null, purchase
       refs.transactionForm.elements.expiry.value = tx.expiry || "";
     }
     refs.transactionForm.elements.platformChoice.value = tx.region || "";
+    syncPlatformPicker();
     refs.transactionForm.elements.counterparty.value = tx.counterparty || "";
     refs.transactionForm.elements.originalTransfer.checked = Boolean(tx.originalTransfer);
     refs.transactionForm.elements.notes.value = tx.notes || "";
@@ -1261,6 +1262,82 @@ $("#shareNative").addEventListener("click", async () => {
   if (!await openImageShare()) toast("手机可长按预览图保存；电脑请点击保存图片。");
 });
 
+
+const PLATFORM_BRANDS = [
+  [/淘宝|taobao/i, 'https://www.taobao.com/favicon.ico', '#ff5000'],
+  [/京东|\bjd\b/i, 'https://www.jd.com/favicon.ico', '#e2231a'],
+  [/拼多多|pdd|pinduoduo/i, 'https://www.pinduoduo.com/favicon.ico', '#e02e24'],
+  [/抖音|douyin/i, 'https://www.douyin.com/favicon.ico', '#222'],
+  [/闲鱼|xianyu|goofish/i, 'https://www.goofish.com/favicon.ico', '#e0b800'],
+  [/shopee/i, 'https://shopee.sg/favicon.ico', '#ee4d2d'],
+  [/lazada/i, 'https://www.lazada.sg/favicon.ico', '#6938ef'],
+  [/amazon|亚马逊/i, 'https://www.amazon.com/favicon.ico', '#d88b00'],
+  [/rakuten|乐天/i, 'https://www.rakuten.co.jp/favicon.ico', '#bf0000'],
+  [/mercari|煤炉/i, 'https://www.mercari.com/favicon.ico', '#e84545'],
+];
+function platformMarkup(name) {
+  const text = String(name || '').trim();
+  if (!text) return '';
+  const brand = PLATFORM_BRANDS.find(([match]) => match.test(text));
+  const fallback = escapeHtml(Array.from(text)[0].toUpperCase());
+  return `<span class="platform-name"><span class="platform-logo" aria-hidden="true" style="--platform-color:${brand?.[2] || '#6f8277'}">${fallback}${brand ? `<img src="${brand[1]}" alt="" referrerpolicy="no-referrer" loading="lazy" />` : ''}</span><span>${escapeHtml(text)}</span></span>`;
+}
+document.addEventListener('error', event => {
+  if (event.target.matches?.('.platform-logo img')) event.target.remove();
+}, true);
+const platformStyles = document.createElement('style');
+platformStyles.textContent = `
+.platform-name { display:inline-flex; align-items:center; gap:7px; vertical-align:middle; min-width:0; }
+.platform-logo { position:relative; display:inline-grid; place-items:center; width:20px; height:20px; flex:none; border-radius:5px; background:var(--platform-color); color:white; font-size:11px; line-height:1; overflow:hidden; font-weight:700; }
+.platform-logo img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:white; }
+.platform-picker { position:relative; }
+.platform-picker summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:42px; padding:10px 11px; border:1px solid #dddcd4; border-radius:10px; background:#fffefb; font-size:14px; }
+.platform-picker summary::-webkit-details-marker { display:none; }
+.platform-picker summary::after { content:'⌄'; color:#6f7c76; }
+.platform-picker summary:focus-visible, .platform-option:focus-visible { outline:2px solid #52796a; outline-offset:2px; }
+.platform-options { position:absolute; top:calc(100% + 5px); left:0; right:0; z-index:10; max-height:220px; overflow:auto; padding:5px; background:#fffefb; border:1px solid #dddcd4; border-radius:10px; box-shadow:0 8px 24px #243c2820; }
+.platform-option { display:block; width:100%; border:0; border-radius:6px; padding:9px; background:transparent; color:inherit; text-align:left; cursor:pointer; font-size:14px; }
+.platform-option:hover, .platform-option[aria-pressed="true"] { background:#eaf0e9; }
+.platform-breakdown b .platform-name { display:inline-flex; padding:0; font-size:inherit; }
+.platform-breakdown b .platform-logo { display:inline-grid; padding:0; }
+`;
+document.head.append(platformStyles);
+function syncPlatformPicker() {
+  const select = refs.transactionForm.elements.platformChoice;
+  const picker = document.querySelector('#platformPicker');
+  if (!picker) return;
+  picker.querySelector('summary').innerHTML = platformMarkup(select.value) || '选择平台';
+  picker.querySelectorAll('[data-platform]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.platform === select.value)));
+}
+function buildPlatformPicker(choices) {
+  const select = refs.transactionForm.elements.platformChoice;
+  let picker = document.querySelector('#platformPicker');
+  if (!picker) {
+    picker = document.createElement('details');
+    picker.id = 'platformPicker';
+    picker.className = 'platform-picker';
+    picker.innerHTML = '<summary aria-label="选择平台"></summary><div class="platform-options" role="group" aria-label="平台选项"></div>';
+    select.after(picker);
+    select.hidden = true;
+    picker.addEventListener('click', event => {
+      const option = event.target.closest('[data-platform]');
+      if (!option) return;
+      event.preventDefault();
+      select.value = option.dataset.platform;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      picker.open = false;
+      picker.querySelector('summary').focus();
+    });
+    picker.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { picker.open = false; picker.querySelector('summary').focus(); }
+    });
+    document.addEventListener('click', event => { if (!picker.contains(event.target)) picker.open = false; });
+  }
+  picker.open = false;
+  picker.querySelector('.platform-options').innerHTML = [''].concat(choices).map(name => `<button type="button" class="platform-option" data-platform="${escapeHtml(name)}">${platformMarkup(name) || '选择平台'}</button>`).join('');
+  syncPlatformPicker();
+}
+
 function platformChoices(type = new FormData(refs.transactionForm).get('type') || 'purchase') {
   const key = type === 'sale' ? 'salePlatforms' : 'purchasePlatforms';
   return normalizePlatforms([
@@ -1275,6 +1352,7 @@ function renderPlatformChoices() {
   const choices = platformChoices();
   select.innerHTML = '<option value="">选择平台</option>' + choices.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
   select.value = choices.includes(previous) ? previous : '';
+  buildPlatformPicker(choices);
 }
 function selectedPlatform(form) {
   const typed = String(form.get('region') || '').trim();
@@ -1283,7 +1361,9 @@ function selectedPlatform(form) {
 }
 refs.transactionForm.elements.platformChoice.addEventListener('change', () => {
   refs.transactionForm.elements.region.value = '';
+  syncPlatformPicker();
 });
 refs.transactionForm.elements.region.addEventListener('input', () => {
   if (refs.transactionForm.elements.region.value.trim()) refs.transactionForm.elements.platformChoice.value = '';
+  syncPlatformPicker();
 });
