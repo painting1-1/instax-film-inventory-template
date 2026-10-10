@@ -481,7 +481,7 @@ function renderLedger(result) {
     list.innerHTML = `<div class="ledger-empty">还没有符合条件的流水</div>`;
     return;
   }
-  list.innerHTML = `<div class="ledger-row header"><span class="ledger-date">购入日期</span><span class="ledger-product">商品</span><span class="ledger-batch">有效期</span><span class="ledger-type">类型</span><span class="ledger-quantity">数量</span><span class="ledger-unit-price">单价 / 状态</span><span></span></div>` + rows.map((tx) => {
+  list.innerHTML = `<div class="ledger-row header"><span class="ledger-date">购入日期</span><span class="ledger-product">商品</span><span class="ledger-platform">平台</span><span class="ledger-batch">有效期</span><span class="ledger-type">类型</span><span class="ledger-quantity">数量</span><span class="ledger-unit-price">单价 / 状态</span><span></span></div>` + rows.map((tx) => {
     const product = getProduct(tx.productId) || {};
     const unitAmount = tx.type === "use" ? "—" : money(tx.unitPrice);
     const expiryState = transactionExpiryStatus(state, tx);
@@ -499,7 +499,8 @@ function renderLedger(result) {
     const isFilmUse = tx.type === "use" && product.category === "相纸";
     return `<div class="ledger-row" data-transaction-id="${escapeHtml(tx.id)}">
       <span class="ledger-date"><small class="ledger-date-label">${typeLabel(tx.type)}日期</small><strong>${formatDate(tx.date).replace(/年|月/g, "/").replace("日", "")}</strong></span>
-      <span class="ledger-product">${productVisual(product, "ledger-visual")}<span><strong>${escapeHtml(productName(product))}</strong><small class="ledger-meta">${escapeHtml(productSubline(product))}${tx.region ? ` · ${platformMarkup(tx.region)}` : ""}</small></span></span>
+      <span class="ledger-product">${productVisual(product, "ledger-visual")}<span><strong>${escapeHtml(productName(product))}</strong>${product.category !== "相纸" && productSubline(product) ? `<small class="ledger-meta">${escapeHtml(productSubline(product))}</small>` : ""}</span></span>
+      <span class="ledger-platform">${tx.type !== "use" && tx.region ? platformMarkup(tx.region) : "—"}</span>
       <span class="ledger-batch">${expiryCell}</span>
       <span class="ledger-type"><b class="type-badge ${tx.type}">${typeLabel(tx.type)}</b>${tx.originalTransfer ? `<small class="transfer-mark">原价转让</small>` : ""}</span>
       <span class="ledger-quantity">${numberText(tx.quantity)} ${product.category === "相纸" ? "盒" : "台"}</span>
@@ -1264,9 +1265,10 @@ $("#shareNative").addEventListener("click", async () => {
 
 
 const PLATFORM_BRANDS = [
+  [/小红书|xiaohongshu|\\bxhs\\b|rednote/i, '/assets/platform-xiaohongshu.svg', '#ff2442'],
   [/淘宝|taobao/i, 'https://www.taobao.com/favicon.ico', '#ff5000'],
   [/京东|\bjd\b/i, 'https://www.jd.com/favicon.ico', '#e2231a'],
-  [/拼多多|pdd|pinduoduo/i, 'https://www.pinduoduo.com/favicon.ico', '#e02e24'],
+  [/拼多多|pdd|pinduoduo/i, '/assets/platform-pinduoduo.svg', '#e02e24'],
   [/抖音|douyin/i, 'https://www.douyin.com/favicon.ico', '#222'],
   [/闲鱼|xianyu|goofish/i, 'https://www.goofish.com/favicon.ico', '#e0b800'],
   [/shopee/i, 'https://shopee.sg/favicon.ico', '#ee4d2d'],
