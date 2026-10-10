@@ -449,7 +449,7 @@ function renderInventory(result) {
   body.innerHTML = rows.map((item) => {
     const unit = item.product.category === "相纸" ? "盒" : "台";
     return `<tr>
-      <td><div class="product-cell">${productVisual(item.product)}<div><strong>${escapeHtml(productName(item.product))}</strong><small>${escapeHtml(productSubline(item.product))}</small></div></div></td>
+      <td><div class="product-cell">${productVisual(item.product)}<div><strong>${escapeHtml(productName(item.product))}</strong>${item.product.category !== "相纸" && item.product.category !== "相机" && item.product.spec ? `<small>${escapeHtml(item.product.spec)}</small>` : ""}</div></div></td>
       <td class="num"><strong>${numberText(item.quantity)}</strong> ${unit}</td>
       <td class="num inventory-current-price">${money(item.averageCost)}</td>
       <td class="num inventory-history-price" title="所有历史购入总金额 ÷ 总购入数量">${money(item.historicalAverage)}<span class="mobile-price-unit">/${unit}</span></td>
@@ -1265,7 +1265,7 @@ $("#shareNative").addEventListener("click", async () => {
 
 
 const PLATFORM_BRANDS = [
-  [/小红书|xiaohongshu|\\bxhs\\b|rednote/i, '/assets/platform-xiaohongshu.svg', '#ff2442'],
+  [/小红书|xiaohongshu|\bxhs\b|rednote/i, '/assets/platform-xiaohongshu.svg', '#ff2442'],
   [/淘宝|taobao/i, 'https://www.taobao.com/favicon.ico', '#ff5000'],
   [/京东|\bjd\b/i, 'https://www.jd.com/favicon.ico', '#e2231a'],
   [/拼多多|pdd|pinduoduo/i, '/assets/platform-pinduoduo.svg', '#e02e24'],
