@@ -604,3 +604,66 @@ body.sync-conflict .delete-product { pointer-events: none; opacity: .45; }
   body.share-view .ledger-swipe-hint { display:none; }
 }
 @media (prefers-reduced-motion:reduce) { .ledger-row .ledger-face { transition:none; } }
+
+/* Transaction sheets share one compact layout; data controls retain their names. */
+.transaction-lot-summary { display:none; }
+.transaction-notes summary { cursor:pointer; color:var(--muted); font-size:12px; }
+.transaction-notes-label { display:block; margin-top:8px; }
+.transaction-notes-label textarea { width:100%; }
+@media (min-width:761px) {
+  #transactionDialog .transaction-notes summary { display:none; }
+}
+@media (max-width:760px) {
+  #transactionDialog { width:calc(100vw - 20px); max-width:440px; max-height:calc(100dvh - 20px); overflow:hidden; border-radius:16px; }
+  #transactionDialog form { display:flex; flex-direction:column; max-height:calc(100dvh - 22px); padding:0; }
+  #transactionDialog .dialog-head { flex-shrink:0; align-items:center; padding:14px 16px 10px; margin:0; gap:10px; }
+  #transactionDialog .dialog-head .eyebrow { display:none; }
+  #transactionDialog .dialog-head h2 { font-size:20px; line-height:1.3; margin:0; }
+  #transactionDialog .icon-button { flex:none; width:32px; height:32px; }
+  #transactionDialog .transaction-lot-summary { display:block; margin-top:4px; }
+  #transactionLotToggle { border:0; background:none; padding:0; color:var(--muted); font-size:11px; cursor:pointer; text-align:left; }
+  #transactionLotToggle::after { content:" ⌄"; }
+  #transactionDialog .transaction-scroll { min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:0 16px 10px; }
+  #transactionDialog .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 10px; }
+  #transactionDialog .form-grid .full { grid-column:1 / -1; }
+  #transactionDialog label { min-width:0; }
+  #transactionDialog label > span { font-size:12px; margin-bottom:4px; }
+  #transactionDialog input:not([type="checkbox"]):not([type="radio"]), #transactionDialog select, #transactionDialog textarea { width:100%; min-width:0; height:40px; min-height:40px; padding:7px 9px; font-size:16px; border-radius:9px; }
+  #transactionDialog input[type="date"], #transactionDialog input[type="month"] { appearance:none; -webkit-appearance:none; padding:7px 5px; }
+  #transactionDialog input::-webkit-date-and-time-value { text-align:left; min-width:0; }
+  #transactionDialog .product-selector { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 10px; padding:0; border:0; background:none; border-radius:0; }
+  #transactionDialog #transactionModelField { grid-column:1 / -1; }
+  #transactionDialog #transactionProductField { order:10; }
+  #transactionDialog #transactionDateField { order:20; }
+  #transactionDialog #expiryField { order:21; }
+  #transactionDialog #quantityField { order:30; }
+  #transactionDialog #unitPriceField { order:31; }
+  #transactionDialog #regionField { grid-column:1 / -1; order:40; }
+  #transactionDialog #counterpartyField { grid-column:1 / -1; order:50; }
+  #transactionDialog #transferField { order:60; padding:7px 9px; gap:8px; }
+  #transactionDialog #transferField b { font-size:12px; }
+  #transactionDialog #transferField small { font-size:10px; line-height:1.4; }
+  #transactionDialog #notesField { order:70; }
+  #transactionDialog #notesField summary { font-size:12px; padding:3px 0; }
+  #transactionDialog .transaction-notes-label > span { display:none; }
+  #transactionDialog textarea { height:56px; min-height:56px; }
+  #transactionDialog #lotIdField { display:none; grid-column:1 / -1; order:0; }
+  #transactionDialog[data-lot-expanded="true"] #lotIdField:not(.hidden) { display:block; }
+  #transactionDialog #quantityHint, #transactionDialog #expiryField > small { display:none; }
+  #transactionDialog[data-transaction-type="sale"] #quantityField,
+  #transactionDialog[data-transaction-type="use"] #quantityField { order:21; }
+  #transactionDialog[data-transaction-type="sale"] #unitPriceField,
+  #transactionDialog[data-transaction-type="purchase"][data-camera="true"] #transactionDateField { grid-column:1 / -1; }
+  #transactionDialog .transaction-context { order:0; padding:8px 9px; gap:9px; border-radius:9px; }
+  #transactionDialog .transaction-context .context-visual { width:32px; height:36px; flex:none; }
+  #transactionDialog .transaction-context strong { font-size:13px; line-height:1.3; }
+  #transactionDialog .transaction-context small { margin-top:3px; font-size:10px; line-height:1.3; }
+  #transactionDialog .dialog-actions { flex-shrink:0; margin:0; padding:10px 16px max(10px,env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:#fbf9f3; gap:9px; }
+  #transactionDialog .dialog-actions button { min-height:42px; padding:8px 14px; }
+  #transactionDialog .dialog-actions .primary { flex:1; }
+  #transactionDialog .form-error:empty { display:none; }
+  #transactionDialog .form-error { margin-top:7px; min-height:0; }
+  #transactionDialog .platform-picker summary { min-height:40px; padding:7px 9px; border-radius:9px; font-size:14px; }
+  #transactionDialog .platform-options { position:static; max-height:180px; margin-top:5px; box-shadow:none; }
+  #transactionDialog .platform-options input[name="region"] { margin-top:5px; }
+}

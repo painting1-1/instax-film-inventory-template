@@ -199,12 +199,13 @@
 
     <dialog id="transactionDialog">
       <form method="dialog" id="transactionForm">
-        <div class="dialog-head"><div><p class="eyebrow">RECORD</p><h2 id="transactionDialogTitle">记录一笔流水</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭">×</button></div>
+        <div class="dialog-head"><div><p class="eyebrow">RECORD</p><h2 id="transactionDialogTitle">记录一笔流水</h2><div id="transactionLotSummary" class="transaction-lot-summary hidden"><button type="button" id="transactionLotToggle" aria-controls="lotIdField" aria-expanded="false">批次</button></div></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭">×</button></div>
         <div class="type-picker">
           <label><input type="radio" name="type" value="purchase" checked /><span>购入</span></label>
           <label><input type="radio" name="type" value="sale" /><span>售出</span></label>
           <label><input type="radio" name="type" value="use" /><span>使用</span></label>
         </div>
+        <div class="transaction-scroll">
         <div class="form-grid">
           <div class="transaction-context full hidden" id="transactionContext"></div>
           <div class="full product-selector" id="transactionProductField">
@@ -215,15 +216,16 @@
           <label id="transactionDateField"><span>日期</span><input name="date" type="date" required /></label>
           <label id="lotIdField"><span>批次流水号</span><input name="lotId" readonly placeholder="选择商品后自动生成" /></label>
           <label class="full hidden" id="batchField"><span>扣减库存批次</span><select name="batchKey"><option value="">请选择有库存的批次</option></select></label>
-          <label id="expiryField"><span>有效期（可后补）</span><input name="expiry" type="month" /><small>仅需填写年月；暂时不清楚可以留空。</small></label>
+          <label id="expiryField"><span>有效期（可空）</span><input name="expiry" type="month" /><small>仅需填写年月；暂时不清楚可以留空。</small></label>
           <label id="quantityField"><span>数量</span><input name="quantity" type="number" min="0.5" step="0.5" value="1" required /><small id="quantityHint">相纸按整盒或 0.5 盒填写。</small></label>
           <label id="unitPriceField"><span>单价</span><input name="unitPrice" type="number" min="0" step="0.01" value="0" required /></label>
           <label id="regionField"><span>平台</span><select name="platformChoice" aria-label="选择平台"></select><input name="region" placeholder="填写新平台，保存后自动加入" aria-label="新平台" autocomplete="off" /></label>
           <label id="counterpartyField"><span>店铺名称</span><input name="counterparty" placeholder="选填" /></label>
           <label class="full checkbox-line" id="transferField"><input type="checkbox" name="originalTransfer" /><span><b>朋友原价转让</b><small>这笔流水计入售出金额，但不计入真实利润与平均售价</small></span></label>
-          <label class="full" id="notesField"><span>备注</span><textarea name="notes" rows="2" placeholder="选填"></textarea></label>
+          <details class="full transaction-notes" id="notesField"><summary>备注（选填）</summary><label class="transaction-notes-label"><span>备注</span><textarea name="notes" rows="2" placeholder="选填"></textarea></label></details>
         </div>
         <p class="form-error" id="transactionError"></p>
+        </div>
         <div class="dialog-actions"><button class="button ghost" type="button" data-close-dialog>取消</button><button class="button primary" value="default" id="transactionSubmitButton">保存流水</button></div>
       </form>
     </dialog>

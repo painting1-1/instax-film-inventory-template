@@ -788,8 +788,31 @@ function openTransactionDialog(transactionId = null, actionType = null, purchase
     refs.transactionForm.elements.productId.disabled = true;
     refs.transactionForm.elements.batchKey.disabled = true;
   }
+  syncTransactionLayout();
+  const compact = window.matchMedia?.("(max-width:760px)").matches;
+  $("#notesField").open = !compact || Boolean(refs.transactionForm.elements.notes.value.trim());
+  refs.transactionDialog.dataset.lotExpanded = "false";
+  $("#transactionLotToggle").setAttribute("aria-expanded", "false");
   refs.transactionDialog.showModal();
+  $("#transactionDialog .transaction-scroll").scrollTop = 0;
 }
+
+function syncTransactionLayout() {
+  const type = new FormData(refs.transactionForm).get("type") || "purchase";
+  const product = getProduct(refs.transactionForm.elements.productId.value);
+  refs.transactionDialog.dataset.transactionType = type;
+  refs.transactionDialog.dataset.camera = String(product?.category === "相机");
+  $("#transactionDateField > span").textContent = type === "purchase" ? "购入日期" : type === "sale" ? "售出日期" : product?.category === "相机" ? "自用日期" : "使用日期";
+  $("#quantityField > span").textContent = product?.category === "相纸" ? "数量（盒，支持0.5）" : "数量（台）";
+  $("#unitPriceField > span").textContent = "单价（元/" + (product?.category === "相纸" ? "盒" : "台") + "）";
+  $("#transactionLotSummary").classList.toggle("hidden", type !== "purchase");
+  $("#transactionLotToggle").textContent = "批次 " + (refs.transactionForm.elements.lotId.value || "选择商品后生成");
+}
+$("#transactionLotToggle").addEventListener("click", () => {
+  const expanded = refs.transactionDialog.dataset.lotExpanded !== "true";
+  refs.transactionDialog.dataset.lotExpanded = String(expanded);
+  $("#transactionLotToggle").setAttribute("aria-expanded", String(expanded));
+});
 
 function setTransactionFieldVisible(id, visible) {
   $(id).classList.toggle("hidden", !visible);
@@ -805,7 +828,7 @@ function updateTransactionContext(batch = null) {
     return;
   }
   const expiryText = product.category === "相机" ? "有效期不适用" : batch?.expiry ? `有效期 ${formatExpiry(batch.expiry)}` : "有效期待补";
-  context.innerHTML = `${productVisual(product, "context-visual")}<span><strong>${escapeHtml(productName(product))}</strong><small>${escapeHtml(batch?.lotId || "历史批次")} · ${expiryText}</small></span>`;
+  context.innerHTML = `${productVisual(product, "context-visual")}<span><strong>${escapeHtml(productName(product))}</strong><small>${escapeHtml(batch?.lotId || "历史批次")} · ${expiryText}${batch ? " · 剩余 " + numberText(batch.quantity) + (product.category === "相纸" ? "盒" : "台") : ""}</small></span>`;
   context.classList.remove("hidden");
 }
 
@@ -821,7 +844,7 @@ function updateTransactionFields(preferredBatch = null) {
   const isCamera = product?.category === "相机";
   const isFilm = product?.category === "相纸";
   setTransactionFieldVisible("#transactionProductField", isPurchase);
-  setTransactionFieldVisible("#transactionDateField", isPurchase);
+  setTransactionFieldVisible("#transactionDateField", true);
   setTransactionFieldVisible("#lotIdField", isPurchase);
   setTransactionFieldVisible("#batchField", false);
   setTransactionFieldVisible("#expiryField", isPurchase && !isCamera);
@@ -844,6 +867,7 @@ function updateTransactionFields(preferredBatch = null) {
   } else {
     updateBatchOptions(preferredBatch);
   }
+  syncTransactionLayout();
 }
 
 function updateBatchOptions(preferredBatch = null) {
@@ -1314,7 +1338,7 @@ function syncPlatformPicker() {
   const select = refs.transactionForm.elements.platformChoice;
   const picker = document.querySelector('#platformPicker');
   if (!picker) return;
-  picker.querySelector('summary').innerHTML = platformMarkup(select.value) || '选择平台';
+  picker.querySelector('summary').innerHTML = platformMarkup(refs.transactionForm.elements.region.value.trim() || select.value) || '选择平台';
   picker.querySelectorAll('[data-platform]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.platform === select.value)));
 }
 function buildPlatformPicker(choices) {
@@ -1342,7 +1366,10 @@ function buildPlatformPicker(choices) {
     document.addEventListener('click', event => { if (!picker.contains(event.target)) picker.open = false; });
   }
   picker.open = false;
+  const newPlatformInput = refs.transactionForm.elements.region;
+  newPlatformInput.remove();
   picker.querySelector('.platform-options').innerHTML = [''].concat(choices).map(name => `<button type="button" class="platform-option" data-platform="${escapeHtml(name)}">${platformMarkup(name) || '选择平台'}</button>`).join('');
+  picker.querySelector('.platform-options').append(newPlatformInput);
   syncPlatformPicker();
 }
 
