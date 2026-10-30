@@ -560,3 +560,47 @@ body.sync-conflict .delete-product { pointer-events: none; opacity: .45; }
   .ledger-quantity, .ledger-actions { grid-column:2; }
   .ledger-actions { min-width:0; }
 }
+
+
+/* Compact mobile ledger: date/product, expiry, quantity/unit price. */
+.ledger-face { display:contents; }
+.ledger-mobile, .ledger-swipe-hint { display:none; }
+@media (max-width:760px) {
+  .ledger-list { --ledger-columns:minmax(0,1fr) 43px 77px; --info-col:1; --expiry-col:2; --price-col:3; }
+  .ledger-swipe-hint { display:block; margin:0 0 7px; color:var(--muted); font-size:11px; }
+  .ledger-row:not(.header) { display:block; position:relative; overflow:hidden; padding:0; background:#e8e5dd; }
+  .ledger-row:not(.header) .ledger-face { display:grid; position:relative; z-index:1; grid-template-columns:var(--ledger-columns); grid-template-rows:auto auto; gap:4px 7px; align-items:center; min-height:77px; padding:11px 10px; background:var(--panel); touch-action:pan-y; transform:translateX(0); transition:transform .2s ease; }
+  .ledger-row.selected .ledger-face { background:#edf2e9; }
+  .ledger-row.swipe-open .ledger-face { transform:translateX(calc(-1 * var(--swipe-width))); }
+  .ledger-row.swipe-dragging .ledger-face { transition:none; }
+  .ledger-row .ledger-desktop { display:none; }
+  .ledger-row .ledger-mobile { display:inline; }
+  .ledger-face .ledger-select { grid-column:1; grid-row:1 / 3; }
+  .ledger-face .ledger-date { grid-column:var(--info-col); grid-row:1; font-size:11px; line-height:1.3; white-space:nowrap; }
+  .ledger-face .ledger-product { grid-column:var(--info-col); grid-row:2; gap:6px; }
+  .ledger-face .ledger-product strong { font-size:13px; line-height:1.35; overflow-wrap:anywhere; }
+  .ledger-face .ledger-product .ledger-meta { display:none; }
+  .ledger-face .product-visual.ledger-visual { width:29px; height:32px; }
+  .ledger-face .ledger-batch { display:block; grid-column:var(--expiry-col); grid-row:1 / 3; align-self:center; text-align:center; font-size:12px; color:var(--muted); white-space:nowrap; }
+  .ledger-face .ledger-quantity { display:block; grid-column:var(--price-col); grid-row:1; text-align:right; font-size:14px; line-height:1.3; white-space:nowrap; }
+  .ledger-face .ledger-unit-price { display:block; grid-column:var(--price-col); grid-row:2; text-align:right; white-space:nowrap; min-width:0; }
+  .ledger-face .ledger-unit-price > .ledger-mobile { font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
+  .ledger-face .ledger-platform, .ledger-face .ledger-type { display:none !important; }
+  .ledger-row .ledger-actions { display:flex; position:absolute; z-index:0; inset:0 0 0 auto; min-width:0; width:calc(var(--action-count) * 56px); height:100%; margin:0; gap:0; padding:0; align-items:stretch; justify-content:flex-end; }
+  .ledger-row .ledger-actions button { flex:1 1 0; width:56px; min-width:0; min-height:44px; padding:6px 2px; border:0; border-radius:0; opacity:1; font-size:13px; font-weight:600; color:#415f71; background:#dceaf4; }
+  .ledger-row .ledger-actions .use { background:#f2dfd7; color:#94624e; }
+  .ledger-row .ledger-actions .edit-row { background:#e4e7d9; color:#66714e; }
+  .ledger-row .ledger-actions .delete-row { background:#b95b4d; color:#fff; }
+  .ledger-row .ledger-actions[aria-hidden="true"] { visibility:hidden; }
+  .ledger-row.swipe-dragging .ledger-actions { visibility:visible; }
+  .ledger-row.header { display:grid; grid-template-columns:var(--ledger-columns); grid-template-rows:auto; gap:7px; padding:9px 10px; }
+  .ledger-row.header .ledger-select { grid-column:1; grid-row:1; }
+  .ledger-row.header .ledger-date { grid-column:var(--info-col); grid-row:1; }
+  .ledger-row.header .ledger-date::after { content:"日期 / 商品"; font-size:11px; }
+  .ledger-row.header > .ledger-batch { display:block !important; grid-column:var(--expiry-col); grid-row:1; font-size:11px; text-align:center; white-space:nowrap; }
+  .ledger-row.header .ledger-quantity { grid-column:var(--price-col); grid-row:1; font-size:0; text-align:right; white-space:nowrap; }
+  .ledger-row.header .ledger-quantity::after { content:"数量 / 单价"; font-size:11px; }
+  body.share-view .ledger-list { --ledger-columns:minmax(0,1fr) 43px 77px; --info-col:1; --expiry-col:2; --price-col:3; }
+  body.share-view .ledger-swipe-hint { display:none; }
+}
+@media (prefers-reduced-motion:reduce) { .ledger-row .ledger-face { transition:none; } }

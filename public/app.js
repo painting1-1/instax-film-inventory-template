@@ -1,3 +1,4 @@
+import { shortLedgerDate, ledgerUseUnitCost, initLedgerSwipe } from "./mobile-ledger.mjs";
 import {
   EMPTY_STATE,
   normalizePlatforms,
@@ -496,16 +497,19 @@ function renderLedger(result) {
           : `<span class="expiry-missing-text">随购入批次待补</span>`;
     const hasStock = tx.type === "purchase" && result.activeBatches.some((batch) => batch.product.id === tx.productId && batch.lotId === tx.lotId && batch.expiry === tx.expiry);
     const batchActions = hasStock ? `<button class="record-action sale" data-create-type="sale" data-source="${escapeHtml(tx.id)}">售出</button><button class="record-action use" data-create-type="use" data-source="${escapeHtml(tx.id)}">使用</button>` : "";
-    const isFilmUse = tx.type === "use" && product.category === "相纸";
-    return `<div class="ledger-row" data-transaction-id="${escapeHtml(tx.id)}">
-      <span class="ledger-date"><small class="ledger-date-label">${typeLabel(tx.type)}日期</small><strong>${formatDate(tx.date).replace(/年|月/g, "/").replace("日", "")}</strong></span>
+    const mobileUnitCost = tx.type === "use" ? ledgerUseUnitCost(state, tx) : tx.unitPrice;
+    const mobilePrice = mobileUnitCost === null ? "成本待补" : money(mobileUnitCost) + "/" + (product.category === "相纸" ? "盒" : "台");
+    const mobileExpiry = product.category === "相机" ? "" : tx.expiry ? shortLedgerDate(tx.expiry, true) : expiryState === "unknown" ? "未知" : "待补";
+    const actionCount = (hasStock ? 2 : 0) + (typeof selfBatch !== "undefined" && selfBatch ? 1 : 0) + 2;
+    return `<div class="ledger-row" data-transaction-id="${escapeHtml(tx.id)}" style="--action-count:${actionCount}"><div class="ledger-face" tabindex="0" aria-label="流水 ${escapeHtml(tx.lotId || tx.id)}，左滑或按左箭头显示操作">
+      <span class="ledger-date"><span class="ledger-desktop"><small class="ledger-date-label">${typeLabel(tx.type)}日期</small><strong>${formatDate(tx.date).replace(/年|月/g, "/").replace("日", "")}</strong></span><span class="ledger-mobile">${typeLabel(tx.type)} ${escapeHtml(shortLedgerDate(tx.date))}</span></span>
       <span class="ledger-product">${productVisual(product, "ledger-visual")}<span><strong>${escapeHtml(productName(product))}</strong>${product.category !== "相纸" && productSubline(product) ? `<small class="ledger-meta">${escapeHtml(productSubline(product))}</small>` : ""}</span></span>
       <span class="ledger-platform">${tx.type !== "use" && tx.region ? platformMarkup(tx.region) : "—"}</span>
-      <span class="ledger-batch">${expiryCell}</span>
+      <span class="ledger-batch"><span class="ledger-desktop">${expiryCell}</span><span class="ledger-mobile">${escapeHtml(mobileExpiry)}</span></span>
       <span class="ledger-type"><b class="type-badge ${tx.type}">${typeLabel(tx.type)}</b>${tx.originalTransfer ? `<small class="transfer-mark">原价转让</small>` : ""}</span>
       <span class="ledger-quantity">${numberText(tx.quantity)} ${product.category === "相纸" ? "盒" : "台"}</span>
-      <span class="ledger-unit-price"><strong>${unitAmount}</strong><small style="display:block;color:var(--muted);margin-top:3px">${escapeHtml(transactionStatus(state, tx.id))}</small></span>
-      <span class="row-actions ledger-actions">${batchActions}<button class="edit-row" data-edit="${escapeHtml(tx.id)}" title="修改流水" aria-label="修改流水">✎</button><button class="delete-row" data-delete="${escapeHtml(tx.id)}" title="删除流水" aria-label="删除流水">×</button></span>
+      <span class="ledger-unit-price"><span class="ledger-desktop"><strong>${unitAmount}</strong><small style="display:block;color:var(--muted);margin-top:3px">${escapeHtml(transactionStatus(state, tx.id))}</small></span><strong class="ledger-mobile" title="${tx.type === "use" ? "对应购入批次单位成本" : "单价"}">${escapeHtml(mobilePrice)}</strong></span>
+      </div><span class="row-actions ledger-actions" role="group" aria-label="流水操作">${batchActions}<button class="edit-row" data-edit="${escapeHtml(tx.id)}" title="修改流水" aria-label="修改流水"><span class="ledger-desktop">✎</span><span class="ledger-mobile">编辑</span></button><button class="delete-row" data-delete="${escapeHtml(tx.id)}" title="删除流水" aria-label="删除流水"><span class="ledger-desktop">×</span><span class="ledger-mobile">删除</span></button></span>
     </div>`;
   }).join("");
 }
@@ -978,6 +982,8 @@ refs.transactionForm.elements.batchKey.addEventListener("change", () => {
   updateTransactionContext(batch);
 });
 
+initLedgerSwipe($("#ledgerList"));
+
 $("#ledgerList").addEventListener("click", (event) => {
   const createButton = event.target.closest("[data-create-type]");
   if (createButton) {
@@ -1369,3 +1375,4 @@ refs.transactionForm.elements.region.addEventListener('input', () => {
   if (refs.transactionForm.elements.region.value.trim()) refs.transactionForm.elements.platformChoice.value = '';
   syncPlatformPicker();
 });
+
