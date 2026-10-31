@@ -300,7 +300,7 @@ document.querySelector("#transactionDialog").close();
 setValue("#inventorySearch", "单白").dispatchEvent(new window.Event("input"));
 if (document.querySelectorAll("#inventoryBody tr").length !== 1) throw new Error("库存没有按具体型号合并不同批次");
 if (document.querySelector("#inventoryBody .product-cell strong")?.textContent !== "Mini · 单白"
-  || document.querySelector("#inventoryBody .product-cell small")?.textContent !== "相纸") {
+  || document.querySelector("#inventoryBody .product-cell small")) {
   throw new Error("白边相纸没有直接显示装数规格");
 }
 const historyState = JSON.parse(localStorage.getItem("instant-inventory-state"));
