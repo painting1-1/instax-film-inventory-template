@@ -144,8 +144,8 @@ function addPurchase(quantity, price = 0, expiry = "2027-01") {
 
 function addDeduction(sourceId, type, quantity, price = 0, transfer = false) {
   document.querySelector(`[data-create-type="${type}"][data-source="${sourceId}"]`).click();
-  if (!document.querySelector("#transactionProductField").classList.contains("hidden") || !document.querySelector("#transactionDateField").classList.contains("hidden") || !document.querySelector("#expiryField").classList.contains("hidden")) {
-    throw new Error("售出/使用弹窗仍显示自动带入的商品、日期或有效期");
+  if (!document.querySelector("#transactionProductField").classList.contains("hidden") || document.querySelector("#transactionDateField").classList.contains("hidden") || !document.querySelector("#expiryField").classList.contains("hidden")) {
+    throw new Error("售出/使用弹窗商品或有效期显示异常，或缺少可修改的交易日期");
   }
   if (!document.querySelector("#transactionContext").textContent.includes("2027年01月")) throw new Error("售出/使用弹窗未自动带入批次有效期");
   if (type === "use" && (!["#unitPriceField", "#regionField", "#counterpartyField", "#transferField", "#notesField"].every((selector) => document.querySelector(selector).classList.contains("hidden")))) {
