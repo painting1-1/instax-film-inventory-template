@@ -237,7 +237,7 @@ const cameraCategory = document.querySelector('#transactionForm select[name="pro
 cameraCategory.value = "相机";
 cameraCategory.dispatchEvent(new window.Event("change"));
 const cameraSelect = document.querySelector('#transactionForm select[name="productId"]');
-cameraSelect.value = [...cameraSelect.querySelectorAll("option")].at(-1).value;
+cameraSelect.value = [...cameraSelect.querySelectorAll("option")].find((option) => option.textContent.includes("Taylor Swift"))?.value || "";
 cameraSelect.dispatchEvent(new window.Event("change"));
 if (!document.querySelector("#expiryField").classList.contains("hidden")) throw new Error("普通相机仍显示有效期字段");
 setValue('#transactionForm input[name="date"]', "2026-09-18");
