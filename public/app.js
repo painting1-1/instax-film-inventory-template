@@ -550,7 +550,7 @@ function renderProductOptions(result) {
   const series = [...new Set(state.products.filter((product) => product.category === "相纸").map((product) => product.series).filter(Boolean))].sort((a, b) => ["Mini", "SQ", "Wide"].indexOf(a) - ["Mini", "SQ", "Wide"].indexOf(b));
   seriesSelect.innerHTML = `<option value="">再选择系列</option>${series.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
   seriesSelect.value = isFilm && series.includes(currentSeries) ? currentSeries : "";
-  const products = state.products.filter((product) => product.category === categorySelect.value && (!isFilm || product.series === seriesSelect.value));
+  const products = state.products.filter((product) => product.category === categorySelect.value && (!isFilm || product.series === seriesSelect.value)).sort(compareTransactionProducts);
   const prompt = !categorySelect.value ? "请先选择类别" : isFilm && !seriesSelect.value ? "请先选择系列" : "请选择具体商品";
   productSelect.innerHTML = `<option value="">${prompt}</option>` + products.map((product) => {
     const stock = result.activeBatches.filter((b) => b.product.id === product.id).reduce((sum, b) => sum + b.quantity, 0);
@@ -701,6 +701,38 @@ function openProductDialog(productId = null) {
   updateProductFormFields();
   refs.productDialog.showModal();
 }
+
+const productOptionCollator = new Intl.Collator("zh-CN-u-co-pinyin", { numeric: true, sensitivity: "base" });
+
+function compareTransactionProducts(a, b) {
+  const compact = value => String(value || "").trim().replace(/\s+/g, "");
+  const seriesRank = product => {
+    const inferred = inferCameraSeries(compact(product.model));
+    const series = (inferred || compact(product.series)).toLowerCase();
+    return ({ mini: 0, sq: 1, square: 1, wide: 2 })[series] ?? 3;
+  };
+  const filmName = product => product.model === "白边" && product.spec ? product.spec : product.model;
+  const filmRank = product => {
+    const name = compact(filmName(product));
+    if (["单白", "单盒白边", "白边单盒", "单盒白", "单白边"].includes(name)) return 0;
+    if (["双白", "双盒白边", "白边双盒", "双盒白", "双白边"].includes(name)) return 1;
+    return 2;
+  };
+  const seriesOrder = seriesRank(a) - seriesRank(b);
+  if (seriesOrder) return seriesOrder;
+  if (a.category === "相纸" && b.category === "相纸") {
+    const borderOrder = filmRank(a) - filmRank(b);
+    if (borderOrder) return borderOrder;
+    const nameOrder = productOptionCollator.compare(compact(filmName(a)), compact(filmName(b)));
+    if (nameOrder) return nameOrder;
+  } else {
+    const modelOrder = productOptionCollator.compare(compact(a.model), compact(b.model));
+    if (modelOrder) return modelOrder;
+  }
+  return productOptionCollator.compare(compact(a.spec), compact(b.spec))
+    || productOptionCollator.compare(a.id, b.id);
+}
+
 
 function inferCameraSeries(model) {
   const value = String(model || "").trim().toLowerCase();
