@@ -326,9 +326,9 @@ const pricedRow = document.querySelector(`#ledgerList .ledger-row[data-transacti
 if (!pricedRow || !pricedRow.querySelector(".ledger-unit-price").textContent.includes(moneyForSmoke(pricedTransaction.unitPrice))) throw new Error("流水未显示单价");
 const regionTransaction = afterEdit.transactions.find((tx) => tx.region && tx.counterparty && tx.region !== tx.counterparty);
 const regionRow = regionTransaction && document.querySelector(`#ledgerList .ledger-row[data-transaction-id="${regionTransaction.id}"]`);
-if (!regionRow?.querySelector(".ledger-meta")?.textContent.includes(regionTransaction.region)
-  || regionRow.querySelector(".ledger-meta").textContent.includes(regionTransaction.counterparty)) {
-  throw new Error("流水商品下方没有用平台/地区替换交易对象");
+if (!regionRow?.querySelector(".ledger-platform")?.textContent.includes(regionTransaction.region)
+  || regionRow.querySelector(".ledger-platform").textContent.includes(regionTransaction.counterparty)) {
+  throw new Error("流水的平台列未正确显示平台/地区，或泄露交易对象");
 }
 document.querySelector('#transactionType button[data-value="sale"]').click();
 const saleFilterRows = document.querySelectorAll("#ledgerList .ledger-row:not(.header)").length;
